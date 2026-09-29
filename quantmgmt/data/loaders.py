@@ -9,6 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+import yfinance as yf
 
 DEFAULT_CACHE_DIR = Path(__file__).resolve().parents[2] / "data" / "cache"
 
@@ -44,14 +45,41 @@ def download_prices(
     pd.DataFrame
         Precios indexados por fecha, una columna por ticker.
     """
-    raise NotImplementedError
+    # Garantiza que sea una lista
+    tickers = [tickers] if isinstance(tickers, str) else list(tickers)
+
+    # Comprobamos si lo tenemos en la cache y sino descargamos
+    key = f"{'_'.join(sorted(tickers))}_{start}_{end}_{interval}"
+
+    if use_cache:
+        cached = load_from_cache(key, cache_dir)
+    if cached is not None:
+        return cached          # ya estaba guardado: no descarga
+        
+    # Descargamos los activos    
+    data = yf.download(
+        tickers,
+        start=start,
+        end=end,
+        interval=interval,
+        auto_adjust=True,
+        progress=False,
+    )["Close"]
+    # Garantiza que sea un DataFrame
+    if isinstance(data, pd.Series):      # por si viniera un solo ticker como Series
+        data = data.to_frame(tickers[0])
+    return data
 
 
-def load_from_cache(key: str, cache_dir: str | Path = DEFAULT_CACHE_DIR) -> pd.DataFrame | None:
+def load_from_cache(key, cache_dir=DEFAULT_CACHE_DIR):
     """Carga datos cacheados en disco si existen, o None si no hay caché."""
-    raise NotImplementedError
+    path = Path(cache_dir) / f"{key}.csv"
+    if not path.exists():
+        return None
+    return pd.read_csv(path, index_col=0, parse_dates=True)
 
 
-def save_to_cache(data: pd.DataFrame, key: str, cache_dir: str | Path = DEFAULT_CACHE_DIR) -> None:
+def save_to_cache(data, key, cache_dir=DEFAULT_CACHE_DIR):
     """Guarda un DataFrame en la caché local."""
-    raise NotImplementedError
+    Path(cache_dir).mkdir(parents=True, exist_ok=True)
+    data.to_csv(Path(cache_dir) / f"{key}.csv")

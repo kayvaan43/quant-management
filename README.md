@@ -74,15 +74,3 @@ print(summary)
 pytest
 ```
 
-## Notebook
-
-`notebooks/01_riesgo.ipynb` descarga 5 activos/carteras con >=10 años de
-histórico diario, calcula la tabla resumen de métricas, genera los gráficos
-pedidos (rolling drawdown, rolling volatility, histograma de retornos con
-VaR/CVaR al 95%) y responde a las preguntas de la práctica.
-
-## Estado
-
-Repositorio recién montado con la estructura mínima pedida en la Práctica 1.
-Las funciones de `quantmgmt/risk` están definidas como esqueletos
-(firma + docstring) pendientes de implementación.
