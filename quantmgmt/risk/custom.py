@@ -1,4 +1,4 @@
-"""Métrica de riesgo propia (pedida en el enunciado de la Práctica 1): índice de insomnio."""
+"""Métrica de riesgo propia: índice de insomnio."""
 
 from __future__ import annotations
 
