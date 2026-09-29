@@ -46,13 +46,18 @@ def test_returns_family(sample_returns: pd.Series) -> None:
     assert isinstance(value, float)
 
 
-@pytest.mark.skip(reason="TODO: implementar annualized_volatility/downside_deviation")
 def test_dispersion_family(sample_returns: pd.Series) -> None:
     vol = risk.annualized_volatility(sample_returns, periods_per_year=252)
     assert vol > 0
 
     dd_dev = risk.downside_deviation(sample_returns, periods_per_year=252)
     assert dd_dev >= 0
+    assert dd_dev <= vol * 1.5  # semidesviación del mismo orden que la volatilidad
+
+    roll = risk.rolling_volatility(sample_returns, window=63)
+    assert len(roll) == len(sample_returns)
+    assert roll.iloc[:62].isna().all()
+    assert roll.dropna().gt(0).all()
 
 
 @pytest.mark.skip(reason="TODO: implementar drawdown_series/max_drawdown")
@@ -65,7 +70,6 @@ def test_drawdown_family(sample_returns: pd.Series) -> None:
     assert mdd == pytest.approx(dd.min())
 
 
-@pytest.mark.skip(reason="TODO: implementar sharpe_ratio/sortino_ratio/calmar_ratio")
 def test_ratios_family(sample_returns: pd.Series) -> None:
     sharpe = risk.sharpe_ratio(sample_returns, periods_per_year=252)
     sortino = risk.sortino_ratio(sample_returns, periods_per_year=252)
