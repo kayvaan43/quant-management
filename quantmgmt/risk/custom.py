@@ -1,35 +1,25 @@
-"""Métrica de riesgo propia (pedida en el enunciado de la Práctica 1).
-
-TODO: diseñar una métrica de riesgo innovadora. Puede ser una combinación de
-otras métricas (p.ej. algo tipo "Sharpe ajustado por cola") o algo
-completamente nuevo. Requisitos del enunciado:
-  - Debe estar bien documentada (qué mide, cómo se interpreta, rango de
-    valores esperado).
-  - Debe ser estandarizada, es decir, calculable igual para cualquier
-    pd.Series/pd.DataFrame de retornos con la misma firma que el resto de
-    funciones de `risk` (returns, periods_per_year, ...).
-  - Debe permitir comparar carteras/NAVs distintos entre sí (¿cuál es mejor
-    según esta métrica?).
-"""
+"""Métrica de riesgo propia (pedida en el enunciado de la Práctica 1): índice de insomnio."""
 
 from __future__ import annotations
 
 import pandas as pd
 
+from .drawdown import drawdown_series
+
 
 def custom_risk_metric(
     returns: pd.Series | pd.DataFrame,
     periods_per_year: int = 252,
+    threshold: float = -0.10,
 ) -> float | pd.Series:
-    """Métrica de riesgo propia.
+    """Índice de insomnio: fracción de periodos con drawdown peor que `threshold`.
 
-    TODO:
-        1. Definir la fórmula/idea (¿combina Sharpe, drawdown, cola...? ¿es
-           nueva?).
-        2. Documentar aquí qué mide y cómo interpretar valores altos/bajos.
-        3. Implementar el cálculo.
-        4. Usarla en `notebooks/01_riesgo.ipynb` para comparar las carteras y
-           responder a la pregunta "¿qué nos dice la métrica que habéis
-           creado?".
+    Mide cuánto tiempo pasa la cartera en una caída "que quita el sueño"
+    (por defecto, más de un 10% bajo su máximo previo). A diferencia de
+    `time_under_water`, no mira solo el episodio más largo sino el total.
+
+    Rango [0, 1]: 0 = nunca cayó tanto; 1 = siempre estuvo así de abajo.
+    Menor es mejor. `periods_per_year` no se usa (la métrica es una
+    proporción), pero se mantiene por consistencia con el resto de `risk`.
     """
-    raise NotImplementedError
+    return (drawdown_series(returns) < threshold).mean()

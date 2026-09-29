@@ -78,8 +78,13 @@ def test_ratios_family(sample_returns: pd.Series) -> None:
     assert np.isfinite(sortino)
     assert np.isfinite(calmar)
 
+    assert risk.tracking_error(sample_returns, sample_returns) == pytest.approx(0.0)
+    benchmark = sample_returns * 0.5
+    assert risk.tracking_error(sample_returns, benchmark) == pytest.approx(
+        risk.annualized_volatility(sample_returns * 0.5)
+    )
 
-@pytest.mark.skip(reason="TODO: implementar var/cvar historico y parametrico")
+
 def test_tail_family(sample_returns: pd.Series) -> None:
     var_hist = risk.var_historical(sample_returns, level=0.95)
     cvar_hist = risk.cvar_historical(sample_returns, level=0.95)
@@ -92,10 +97,10 @@ def test_tail_family(sample_returns: pd.Series) -> None:
     assert np.isfinite(var_cf)
 
 
-@pytest.mark.skip(reason="TODO: implementar la metrica de riesgo propia")
 def test_custom_metric(sample_returns: pd.Series) -> None:
     value = risk.custom_risk_metric(sample_returns, periods_per_year=252)
     assert np.isfinite(value)
+    assert 0.0 <= value <= 1.0
 
 
 @pytest.mark.skip(reason="TODO: comprobar que las funciones aceptan DataFrame multi-activo")
